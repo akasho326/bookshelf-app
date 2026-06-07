@@ -44,7 +44,7 @@ erDiagram
 
     book_genre {
         bigint_unsigned id PK
-        bigint_unsigned book_id FK "UNIQUE(book_id, genre_id)"
+        bigint_unsigned book_id FK
         bigint_unsigned genre_id FK
         timestamp created_at
         timestamp updated_at
@@ -52,7 +52,7 @@ erDiagram
 
     review_likes {
         bigint_unsigned id PK
-        bigint_unsigned review_id FK "UNIQUE(review_id, user_id)"
+        bigint_unsigned review_id FK
         bigint_unsigned user_id FK
         timestamp created_at
         timestamp updated_at
@@ -60,7 +60,7 @@ erDiagram
 
     favorites {
         bigint_unsigned id PK
-        bigint_unsigned book_id FK "UNIQUE(book_id, user_id)"
+        bigint_unsigned book_id FK
         bigint_unsigned user_id FK
         timestamp created_at
         timestamp updated_at
@@ -76,3 +76,9 @@ erDiagram
     genres ||--o{ book_genre : "has many"
     reviews ||--o{ review_likes : "has many"
 ```
+### 制約
+
+- reviews: UNIQUE(book_id, user_id)
+- favorites: UNIQUE(book_id, user_id)
+- review_likes: UNIQUE(review_id, user_id)
+- book_genre: UNIQUE(book_id, genre_id)

@@ -30,8 +30,8 @@ class UpdateBookRequest extends FormRequest
             'published_date' => ['required', 'date', 'before_or_equal:today'],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'url'],
-            'genre_ids' => ['required', 'array', 'min:1'],
-            'genre_ids.*' => ['integer', 'exists:genres,id'],
+            'genres' => ['required', 'array', 'min:1'],
+            'genres.*' => ['integer', 'exists:genres,id'],
         ];
     }
 
@@ -45,9 +45,9 @@ class UpdateBookRequest extends FormRequest
             'isbn.unique' => 'このISBNは既に使用されています。',
             'published_date.required' => '出版日を選択してください',
             'image_url.url' => 'URLはURL形式で入力してください',
-            'genre_ids.required' => 'ジャンルを選択してください',
-            'genre_ids.min' => 'ジャンルを1つ以上選択してください',
-            'genre_ids.*.exists' => '選択されたジャンルが存在しません',
+            'genres.required' => 'ジャンルを選択してください',
+            'genres.min' => 'ジャンルを1つ以上選択してください',
+            'genres.*.exists' => '選択されたジャンルが存在しません',
         ];
     }
 }

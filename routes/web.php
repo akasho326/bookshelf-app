@@ -3,6 +3,7 @@
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ReviewLikeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,11 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::put('reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
+    Route::post('reviews/{review}/like', [ReviewLikeController::class, 'toggle'])->name('reviews.like');
+
     // 仮ルート
     Route::post('favorites/{book}/toggle', function () {
         return back();
     })->name('favorites.toggle');
-    Route::post('reviews/like', function () {
-        return back();
-    })->name('reviews.like');
 });

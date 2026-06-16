@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
@@ -12,7 +13,6 @@ Route::get('/', function () {
 
 // 認証不要のルート
 Route::get('books', [BookController::class, 'index'])->name('books.index');
-Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');
 
 // 認証が必要なルート
 Route::middleware('auth')->group(function () {
@@ -31,8 +31,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('reviews/{review}/like', [ReviewLikeController::class, 'toggle'])->name('reviews.like');
 
-    // 仮ルート
-    Route::post('favorites/{book}/toggle', function () {
-        return back();
-    })->name('favorites.toggle');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 });
+
+// 認証不要のルート
+Route::get('books/{book}', [BookController::class, 'show'])->name('books.show');

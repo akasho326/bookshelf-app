@@ -21,9 +21,9 @@
                     <x-nav-link :href="route('books.create')" :active="request()->routeIs('books.create')">
                         {{ __('書籍登録') }}
                     </x-nav-link>
-                    {{-- <x-nav-link :href="route('favorites.index')" :active="request()->routeIs('favorites.index')">
+                    <x-nav-link :href="route('favorites.index')" :active="request()->routeIs('favorites.index')">
                         {{ __('お気に入り') }}
-                    </x-nav-link> --}}
+                    </x-nav-link>
                     <x-nav-link :href="route('genres.index')" :active="request()->routeIs('genres.*')">
                         {{ __('ジャンル管理') }}
                     </x-nav-link>
@@ -55,7 +55,7 @@
                             <form method="POST" action="{{ route('logout') }}" novalidate>
                                 @csrf
                                 <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
-                                                                this.closest('form').submit();">
+                                                                    this.closest('form').submit();">
                                     {{ __('ログアウト') }}
                                 </x-dropdown-link>
                             </form>
@@ -96,10 +96,9 @@
             <x-responsive-nav-link :href="route('books.create')" :active="request()->routeIs('books.create')">
                 {{ __('書籍登録') }}
             </x-responsive-nav-link>
-            {{-- <x-responsive-nav-link :href="route('favorites.index')"
-                :active="request()->routeIs('favorites.index')">
+            <x-responsive-nav-link :href="route('favorites.index')" :active="request()->routeIs('favorites.index')">
                 {{ __('お気に入り') }}
-            </x-responsive-nav-link> --}}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('genres.index')" :active="request()->routeIs('genres.*')">
                 {{ __('ジャンル管理') }}
             </x-responsive-nav-link>
@@ -118,7 +117,7 @@
                     <form method="POST" action="{{ route('logout') }}" novalidate>
                         @csrf
                         <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
-                                                        this.closest('form').submit();">
+                                                            this.closest('form').submit();">
                             {{ __('ログアウト') }}
                         </x-responsive-nav-link>
                     </form>

@@ -61,6 +61,36 @@ class ReviewControllerTest extends TestCase
         $this->assertDatabaseCount('reviews', 0);
     }
 
+    public function test_同じユーザーは同じ書籍に2回レビュー投稿できない(): void
+    {
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create();
+
+        Review::factory()->create([
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('reviews.store', $book), [
+                'book_id' => $book->id,
+                'rating' => 5,
+                'comment' => '2回目のレビュー',
+            ]);
+
+        $response->assertRedirect(route('books.show', $book));
+        $response->assertSessionHas('error', '既にレビューを投稿しています。');
+
+        $this->assertDatabaseCount('reviews', 1);
+
+        $this->assertDatabaseMissing('reviews', [
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+            'comment' => '2回目のレビュー',
+        ]);
+    }
+
     public function test_作成者のみがレビュー編集画面を表示できる(): void
     {
         $user = User::factory()->create();

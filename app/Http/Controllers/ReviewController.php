@@ -13,6 +13,15 @@ class ReviewController extends Controller
 {
     public function store(StoreReviewRequest $request, Book $book): RedirectResponse
     {
+        if (
+            Review::where('book_id', $book->id)
+                ->where('user_id', auth()->id())
+                ->exists()
+        ) {
+            return redirect()->route('books.show', $book)
+                ->with('error', '既にレビューを投稿しています。');
+        }
+
         $data = $request->validated();
 
         $data['user_id'] = auth()->id();

@@ -8,9 +8,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/books');
 
 // 認証不要のルート
 Route::get('books', [BookController::class, 'index'])->name('books.index');

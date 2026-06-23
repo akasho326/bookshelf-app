@@ -43,7 +43,21 @@ class GenrePageTest extends TestCase
         $response->assertSee('1');
     }
 
-    public function test_ゲストユーザーはジャンル編集画面を表示できない(): void
+    public function test_未認証ユーザーはジャンル一覧画面にアクセスするとログイン画面へリダイレクトされる(): void
+    {
+        $response = $this->get(route('genres.index'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_未認証ユーザーはジャンル登録画面にアクセスするとログイン画面へリダイレクトされる(): void
+    {
+        $response = $this->get(route('genres.create'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_未認証ユーザーはジャンル編集画面にアクセスするとログイン画面へリダイレクトされる(): void
     {
         $genre = Genre::factory()->create();
 
@@ -108,5 +122,14 @@ class GenrePageTest extends TestCase
         $response->assertViewIs('genres.show');
 
         $this->assertEquals(10, $response->viewData('books')->count());
+    }
+
+    public function test_未認証ユーザーはジャンル詳細画面にアクセスするとログイン画面へリダイレクトされる(): void
+    {
+        $genre = Genre::factory()->create();
+
+        $response = $this->get(route('genres.show', $genre));
+
+        $response->assertRedirect(route('login'));
     }
 }

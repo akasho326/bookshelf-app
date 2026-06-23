@@ -81,6 +81,17 @@ class FavoriteControllerTest extends TestCase
         ]);
     }
 
+    public function test_未認証ユーザーはお気に入りを追加できない(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->post(route('favorites.toggle', $book));
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('favorites', 0);
+    }
+
     public function test_認証済みユーザーはお気に入り一覧画面を表示できる(): void
     {
         $user = User::factory()->create();
@@ -135,5 +146,12 @@ class FavoriteControllerTest extends TestCase
         $response->assertViewIs('favorites.index');
 
         $this->assertEquals(10, $response->viewData('books')->count());
+    }
+
+    public function test_未認証ユーザーはお気に入り一覧画面にアクセスするとログイン画面へリダイレクトされる(): void
+    {
+        $response = $this->get(route('favorites.index'));
+
+        $response->assertRedirect(route('login'));
     }
 }

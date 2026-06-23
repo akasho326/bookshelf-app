@@ -117,4 +117,11 @@ class BookPageTest extends TestCase
         $response->assertSee('最高のレビューです');
         $response->assertSee('1');
     }
+
+    public function test_未認証ユーザーは書籍登録画面にアクセスするとログイン画面へリダイレクトされる(): void
+    {
+        $response = $this->get(route('books.create'));
+
+        $response->assertRedirect(route('login'));
+    }
 }

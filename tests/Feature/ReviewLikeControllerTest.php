@@ -93,4 +93,19 @@ class ReviewLikeControllerTest extends TestCase
             'review_id' => $review->id,
         ]);
     }
+
+    public function test_未認証ユーザーはレビューにいいねできない(): void
+    {
+        $book = Book::factory()->create();
+
+        $review = Review::factory()->create([
+            'book_id' => $book->id,
+        ]);
+
+        $response = $this->post(route('reviews.like', $review));
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('review_likes', 0);
+    }
 }

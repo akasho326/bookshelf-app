@@ -91,6 +91,24 @@ class ReviewControllerTest extends TestCase
         ]);
     }
 
+    public function test_未認証ユーザーはレビューを投稿できない(): void
+    {
+        $user = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->post(route('reviews.store', $book), [
+            'rating' => 5,
+            'comment' => 'テストレビューです',
+        ]);
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('reviews', 0);
+    }
+
     public function test_作成者のみがレビュー編集画面を表示できる(): void
     {
         $user = User::factory()->create();

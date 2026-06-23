@@ -42,6 +42,17 @@ class GenreControllerTest extends TestCase
         $this->assertDatabaseCount('genres', 0);
     }
 
+    public function test_未認証ユーザーはジャンルを作成できない(): void
+    {
+        $response = $this->post(route('genres.store'), [
+            'name' => 'ミステリー',
+        ]);
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseCount('genres', 0);
+    }
+
     public function test_認証済みユーザーはジャンル編集画面を表示できる(): void
     {
         $user = User::factory()->create();

@@ -73,6 +73,25 @@ class BookControllerTest extends TestCase
         $this->assertDatabaseCount('books', 0);
     }
 
+    public function test_未認証ユーザーは書籍を作成できない(): void
+    {
+        $genre = Genre::factory()->create();
+
+        $response = $this->post(route('books.store'), [
+            'title' => 'テスト本',
+            'author' => '著者',
+            'isbn' => '1234567890123',
+            'published_date' => '2026-01-01',
+            'genres' => [$genre->id],
+        ]);
+
+        $response->assertRedirect(route('login'));
+
+        $this->assertDatabaseMissing('books', [
+            'title' => 'テスト本',
+        ]);
+    }
+
     public function test_作成者のみが書籍編集画面を表示できる(): void
     {
         $user = User::factory()->create();

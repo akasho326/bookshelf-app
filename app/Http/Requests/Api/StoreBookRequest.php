@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Api;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateBookRequest extends FormRequest
+class StoreBookRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +23,10 @@ class UpdateBookRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => ['required', 'integer', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
             'author' => ['required', 'string', 'max:255'],
-            'isbn' => ['required', 'string', 'size:13', Rule::unique('books', 'isbn')->ignore($this->book)],
+            'isbn' => ['required', 'string', 'size:13', 'unique:books,isbn'],
             'published_date' => ['required', 'date', 'before_or_equal:today'],
             'description' => ['nullable', 'string'],
             'image_url' => ['nullable', 'url'],
@@ -38,6 +38,9 @@ class UpdateBookRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'user_id.required' => '登録者IDを入力してください',
+            'user_id.integer' => '登録者IDは整数で入力してください',
+            'user_id.exists' => '指定されたユーザーは存在しません',
             'title.required' => 'タイトルを入力してください',
             'author.required' => '著者を入力してください',
             'isbn.required' => 'ISBNを入力してください',

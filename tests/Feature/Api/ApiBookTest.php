@@ -133,10 +133,11 @@ class ApiBookTest extends TestCase
 
     public function test_書籍作成_ap_iで書籍を作成できる(): void
     {
-        User::factory()->create(['id' => 1]);
+        $user = User::factory()->create();
         $genre = Genre::factory()->create();
 
         $response = $this->postJson('/api/v1/books', [
+            'user_id' => $user->id,
             'title' => 'API作成の本',
             'author' => 'API著者',
             'isbn' => '1234567890123',
@@ -164,6 +165,7 @@ class ApiBookTest extends TestCase
     public function test_書籍作成のバリデーションエラー時は422エラーを返す(): void
     {
         $response = $this->postJson('/api/v1/books', [
+            'user_id' => '',
             'title' => '',
             'author' => '',
             'isbn' => '',
@@ -173,6 +175,7 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
+            'user_id',
             'title',
             'author',
             'isbn',
@@ -183,10 +186,12 @@ class ApiBookTest extends TestCase
 
     public function test_書籍更新_ap_iで書籍を更新できる(): void
     {
+        $user = User::factory()->create();
         $genre = Genre::factory()->create();
         $book = Book::factory()->create();
 
         $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'user_id' => $user->id,
             'title' => '更新後タイトル',
             'author' => '更新後著者',
             'isbn' => $book->isbn,
@@ -212,9 +217,12 @@ class ApiBookTest extends TestCase
 
     public function test_存在しない書籍_i_dでは更新時に404エラーを返す(): void
     {
+        $user = User::factory()->create();
+
         $genre = Genre::factory()->create();
 
         $response = $this->putJson('/api/v1/books/999999', [
+            'user_id' => $user->id,
             'title' => '更新後タイトル',
             'author' => '更新後著者',
             'isbn' => '1234567890123',
@@ -232,6 +240,7 @@ class ApiBookTest extends TestCase
         $book = Book::factory()->create();
 
         $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'user_id' => '',
             'title' => '',
             'author' => '',
             'isbn' => '',
@@ -243,6 +252,7 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
+            'user_id',
             'title',
             'author',
             'isbn',

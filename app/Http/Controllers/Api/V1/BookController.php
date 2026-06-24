@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreBookRequest;
-use App\Http\Requests\UpdateBookRequest;
+use App\Http\Requests\Api\StoreBookRequest;
+use App\Http\Requests\Api\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
 use Illuminate\Http\JsonResponse;
@@ -54,7 +54,7 @@ class BookController extends Controller
     public function store(StoreBookRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $data['user_id'] = 1;
+
         $genreIds = $data['genres'];
         unset($data['genres']);
 

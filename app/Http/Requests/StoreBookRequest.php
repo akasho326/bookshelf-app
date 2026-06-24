@@ -41,11 +41,14 @@ class StoreBookRequest extends FormRequest
             'author.required' => '著者を入力してください',
             'isbn.required' => 'ISBNを入力してください',
             'isbn.size' => 'ISBNは13桁で入力してください',
-            'isbn.unique' => 'このISBNは既に使用されています。',
+            'isbn.unique' => 'このISBNは既に使用されています',
             'published_date.required' => '出版日を選択してください',
-            'image_url.url' => 'URLはURL形式で入力してください',
+            'published_date.before_or_equal' => '出版日は今日以前の日付を指定してください',
+            'image_url.url' => '画像URLは正しいURL形式で入力してください',
             'genres.required' => 'ジャンルを選択してください',
+            'genres.array' => 'ジャンルの形式が不正です',
             'genres.min' => 'ジャンルを1つ以上選択してください',
+            'genres.*.integer' => 'ジャンルIDは整数で入力してください',
             'genres.*.exists' => '選択されたジャンルが存在しません',
         ];
     }

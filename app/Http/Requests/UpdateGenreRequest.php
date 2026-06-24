@@ -32,7 +32,7 @@ class UpdateGenreRequest extends FormRequest
     {
         return [
             'name.required' => 'ジャンル名を入力してください',
-            'name.unique' => 'このジャンル名は既に使用されています。',
+            'name.unique' => 'このジャンル名は既に使用されています',
         ];
     }
 }

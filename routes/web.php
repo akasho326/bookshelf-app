@@ -33,6 +33,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    Route::get('reports', fn () => view('reports.index'))->name('reports.index');
+    Route::get('reading-plans', fn () => view('reading-plans.index'))->name('reading-plans.index');
+    Route::get('notifications', fn () => view('notifications.index', [
+        'notifications' => collect(),
+        'unreadNotificationCount' => 0,
+    ]))->name('notifications.index');
 });
 
 // 認証不要のルート

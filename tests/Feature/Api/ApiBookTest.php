@@ -178,8 +178,6 @@ class ApiBookTest extends TestCase
             'user_id',
             'title',
             'author',
-            'isbn',
-            'published_date',
             'genres',
         ]);
     }
@@ -255,8 +253,6 @@ class ApiBookTest extends TestCase
             'user_id',
             'title',
             'author',
-            'isbn',
-            'published_date',
             'image_url',
             'genres',
         ]);

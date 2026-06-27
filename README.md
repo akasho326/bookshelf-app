@@ -89,13 +89,38 @@ erDiagram
         timestamp updated_at
     }
 
+    reading_plans {
+        bigint_unsigned id PK
+        bigint_unsigned book_id FK
+        bigint_unsigned user_id FK
+        date target_date
+        varchar_255 status
+        timestamp completed_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    notifications {
+        uuid id PK
+        varchar_255 type
+        varchar_255 notifiable_type
+        bigint_unsigned notifiable_id
+        text data
+        timestamp read_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
     users ||--o{ books : "has many"
     users ||--o{ reviews : "has many"
     users ||--o{ review_likes : "has many"
     users ||--o{ favorites : "has many"
+    users ||--o{ reading_plans : "has many"
+    users ||--o{ notifications : "has many"
     books ||--o{ reviews : "has many" 
     books ||--o{ favorites : "has many"
     books ||--o{ book_genre : "has many"
+    books ||--o{ reading_plans : "has many"
     genres ||--o{ book_genre : "has many"
     reviews ||--o{ review_likes : "has many"
 ```
@@ -106,6 +131,7 @@ erDiagram
 - favorites: UNIQUE(book_id, user_id)
 - review_likes: UNIQUE(review_id, user_id)
 - book_genre: UNIQUE(book_id, genre_id)
+- reading_plans: UNIQUE(book_id, user_id)
 
 ## 開発環境URL
 

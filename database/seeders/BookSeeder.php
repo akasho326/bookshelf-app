@@ -16,7 +16,11 @@ class BookSeeder extends Seeder
     public function run(): void
     {
         $faker = Faker::create('ja_JP');
-        $user = User::first();
+        $users = User::all();
+
+        if ($users->isEmpty()) {
+            return;
+        }
 
         // 書籍データを11件投入する
         $books = [
@@ -128,7 +132,7 @@ class BookSeeder extends Seeder
             $book = Book::firstOrCreate(
                 ['isbn' => $bookData['isbn']],
                 array_merge($bookData, [
-                    'user_id' => $user->id,
+                    'user_id' => $users->random()->id,
                 ])
             );
 

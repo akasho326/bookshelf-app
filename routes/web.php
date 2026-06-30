@@ -4,6 +4,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\ReadingPlanController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use Illuminate\Support\Facades\Route;
@@ -34,8 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
+    Route::resource('reading-plans', ReadingPlanController::class)->except('show');
+    Route::post('reading-plans/{readingPlan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
+
     Route::get('reports', fn () => view('reports.index'))->name('reports.index');
-    Route::get('reading-plans', fn () => view('reading-plans.index'))->name('reading-plans.index');
     Route::get('notifications', fn () => view('notifications.index', [
         'notifications' => collect(),
         'unreadNotificationCount' => 0,

@@ -3,6 +3,7 @@
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\ReadingPlanController;
 use App\Http\Controllers\ReportController;
@@ -40,10 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::post('reading-plans/{readingPlan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('notifications', fn () => view('notifications.index', [
-        'notifications' => collect(),
-        'unreadNotificationCount' => 0,
-    ]))->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // 認証不要のルート

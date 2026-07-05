@@ -49,7 +49,7 @@ class ReadingPlanController extends Controller
         $data = $request->validated();
 
         $data['user_id'] = auth()->id();
-        $data['status'] = ReadingPlanStatus::NotStarted;
+        $data['status'] = ReadingPlanStatus::Reading;
         $data['completed_at'] = null;
 
         ReadingPlan::create($data);

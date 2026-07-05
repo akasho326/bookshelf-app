@@ -29,7 +29,7 @@ class ReadingPlanSeeder extends Seeder
             'user_id' => $mainUser->id,
             'book_id' => $books[0]->id,
             'target_date' => today()->subDays(1),
-            'status' => 'not_started',
+            'status' => 'reading',
             'completed_at' => null,
         ]);
 
@@ -49,7 +49,7 @@ class ReadingPlanSeeder extends Seeder
             'user_id' => $mainUser->id,
             'book_id' => $books[2]->id,
             'target_date' => today()->addDays(3),
-            'status' => 'not_started',
+            'status' => 'reading',
             'completed_at' => null,
         ]);
 
@@ -89,7 +89,7 @@ class ReadingPlanSeeder extends Seeder
             'user_id' => $otherUser->id,
             'book_id' => $books[6]->id,
             'target_date' => today()->addDays(2),
-            'status' => 'not_started',
+            'status' => 'reading',
             'completed_at' => null,
         ]);
 

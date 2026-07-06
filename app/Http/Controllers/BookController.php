@@ -6,8 +6,10 @@ use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Genre;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -107,5 +109,55 @@ class BookController extends Controller
 
         return redirect()->route('books.index')
             ->with('success', '書籍を削除しました。');
+    }
+
+    public function searchByIsbn(string $isbn): JsonResponse
+    {
+        if (! preg_match('/^\d{13}$/', $isbn)) {
+            return response()->json([
+                'error' => 'ISBNは13桁の数字で入力してください。',
+            ], 422);
+        }
+
+        $response = Http::get('https://www.googleapis.com/books/v1/volumes', [
+            'q' => 'isbn:'.$isbn,
+        ]);
+
+        if ($response->status() === 429) {
+            return response()->json([
+                'error' => 'Google Books APIの利用上限に達しました。時間をおいて再度お試しください。',
+            ], 429);
+        }
+
+        if ($response->failed()) {
+            return response()->json([
+                'error' => '書籍情報の取得に失敗しました。',
+            ], 500);
+        }
+
+        $items = $response->json('items');
+
+        if (empty($items)) {
+            return response()->json([
+                'error' => '該当する書籍が見つかりませんでした。',
+            ], 404);
+        }
+
+        $volumeInfo = $items[0]['volumeInfo'] ?? [];
+
+        $publishedDate = $volumeInfo['publishedDate'] ?? null;
+
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $publishedDate)) {
+            $publishedDate = null;
+        }
+
+        return response()->json([
+            'title' => $volumeInfo['title'] ?? '',
+            'author' => implode(', ', $volumeInfo['authors'] ?? []),
+            'isbn' => $isbn,
+            'published_date' => $publishedDate,
+            'description' => $volumeInfo['description'] ?? '',
+            'image_url' => $volumeInfo['imageLinks']['thumbnail'] ?? '',
+        ]);
     }
 }

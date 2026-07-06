@@ -20,6 +20,7 @@ Route::get('ranking', [RankingController::class, 'index'])->name('ranking.index'
 // 認証が必要なルート
 Route::middleware('auth')->group(function () {
     Route::get('books/create', [BookController::class, 'create'])->name('books.create');
+    Route::get('books/isbn/{isbn}', [BookController::class, 'searchByIsbn'])->name('books.search-by-isbn');
     Route::post('books', [BookController::class, 'store'])->name('books.store');
     Route::get('books/{book}/edit', [BookController::class, 'edit'])->name('books.edit');
     Route::put('books/{book}', [BookController::class, 'update'])->name('books.update');
@@ -34,15 +35,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('reviews/{review}/like', [ReviewLikeController::class, 'toggle'])->name('reviews.like');
 
-    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::get('favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
     Route::resource('reading-plans', ReadingPlanController::class)->except('show');
     Route::post('reading-plans/{readingPlan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // 認証不要のルート

@@ -7,6 +7,7 @@ use App\Models\Genre;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ApiBookTest extends TestCase
@@ -134,10 +135,12 @@ class ApiBookTest extends TestCase
     public function test_書籍作成_ap_iで書籍を作成できる(): void
     {
         $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $genre = Genre::factory()->create();
 
         $response = $this->postJson('/api/v1/books', [
-            'user_id' => $user->id,
             'title' => 'API作成の本',
             'author' => 'API著者',
             'isbn' => '1234567890123',
@@ -164,8 +167,11 @@ class ApiBookTest extends TestCase
 
     public function test_書籍作成のバリデーションエラー時は422エラーを返す(): void
     {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $response = $this->postJson('/api/v1/books', [
-            'user_id' => '',
             'title' => '',
             'author' => '',
             'isbn' => '',
@@ -175,7 +181,6 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
-            'user_id',
             'title',
             'author',
             'genres',
@@ -185,11 +190,16 @@ class ApiBookTest extends TestCase
     public function test_書籍更新_ap_iで書籍を更新できる(): void
     {
         $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $genre = Genre::factory()->create();
-        $book = Book::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $response = $this->putJson("/api/v1/books/{$book->id}", [
-            'user_id' => $user->id,
             'title' => '更新後タイトル',
             'author' => '更新後著者',
             'isbn' => $book->isbn,
@@ -217,10 +227,11 @@ class ApiBookTest extends TestCase
     {
         $user = User::factory()->create();
 
+        Sanctum::actingAs($user);
+
         $genre = Genre::factory()->create();
 
         $response = $this->putJson('/api/v1/books/999999', [
-            'user_id' => $user->id,
             'title' => '更新後タイトル',
             'author' => '更新後著者',
             'isbn' => '1234567890123',
@@ -235,10 +246,15 @@ class ApiBookTest extends TestCase
 
     public function test_書籍更新時のバリデーションエラー時は422エラーを返す(): void
     {
-        $book = Book::factory()->create();
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $response = $this->putJson("/api/v1/books/{$book->id}", [
-            'user_id' => '',
             'title' => '',
             'author' => '',
             'isbn' => '',
@@ -250,7 +266,6 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
-            'user_id',
             'title',
             'author',
             'image_url',
@@ -260,7 +275,13 @@ class ApiBookTest extends TestCase
 
     public function test_書籍削除_ap_iで書籍を削除できる(): void
     {
-        $book = Book::factory()->create();
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $response = $this->deleteJson("/api/v1/books/{$book->id}");
 
@@ -273,6 +294,10 @@ class ApiBookTest extends TestCase
 
     public function test_存在しない書籍_i_dでは削除時に404エラーを返す(): void
     {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
         $response = $this->deleteJson('/api/v1/books/999999');
 
         $response->assertNotFound();

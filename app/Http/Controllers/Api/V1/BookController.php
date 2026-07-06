@@ -55,6 +55,8 @@ class BookController extends Controller
     {
         $data = $request->validated();
 
+        $data['user_id'] = $request->user()->id;
+
         $genreIds = $data['genres'];
         unset($data['genres']);
 
@@ -71,6 +73,8 @@ class BookController extends Controller
 
     public function update(UpdateBookRequest $request, Book $book): BookResource
     {
+        $this->authorize('update', $book);
+
         $data = $request->validated();
 
         $genreIds = $data['genres'];
@@ -87,6 +91,8 @@ class BookController extends Controller
 
     public function destroy(Book $book): JsonResponse
     {
+        $this->authorize('delete', $book);
+
         $book->delete();
 
         return response()->json(null, 204);

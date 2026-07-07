@@ -11,7 +11,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/books');
+Route::redirect('/', '/login');
 
 // 認証不要のルート
 Route::get('books', [BookController::class, 'index'])->name('books.index');

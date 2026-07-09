@@ -9,6 +9,7 @@ use App\Models\Genre;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
@@ -57,12 +58,17 @@ class BookController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = auth()->id();
+
         $genreIds = $data['genres'];
         unset($data['genres']);
 
-        $book = Book::create($data);
+        $book = DB::transaction(function () use ($data, $genreIds) {
+            $book = Book::create($data);
 
-        $book->genres()->attach($genreIds);
+            $book->genres()->attach($genreIds);
+
+            return $book;
+        });
 
         return redirect()->route('books.show', $book)
             ->with('success', '書籍を登録しました。');
@@ -93,9 +99,11 @@ class BookController extends Controller
         $genreIds = $data['genres'];
         unset($data['genres']);
 
-        $book->update($data);
+        DB::transaction(function () use ($book, $data, $genreIds) {
+            $book->update($data);
 
-        $book->genres()->sync($genreIds);
+            $book->genres()->sync($genreIds);
+        });
 
         return redirect()->route('books.show', $book)
             ->with('success', '書籍を更新しました。');
@@ -121,6 +129,7 @@ class BookController extends Controller
 
         $response = Http::get('https://www.googleapis.com/books/v1/volumes', [
             'q' => 'isbn:'.$isbn,
+            'key' => config('services.google.books_api_key'),
         ]);
 
         if ($response->status() === 429) {

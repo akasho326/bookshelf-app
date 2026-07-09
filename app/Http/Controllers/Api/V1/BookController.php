@@ -10,6 +10,7 @@ use App\Models\Book;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -60,9 +61,13 @@ class BookController extends Controller
         $genreIds = $data['genres'];
         unset($data['genres']);
 
-        $book = Book::create($data);
+        $book = DB::transaction(function () use ($data, $genreIds) {
+            $book = Book::create($data);
 
-        $book->genres()->attach($genreIds);
+            $book->genres()->attach($genreIds);
+
+            return $book;
+        });
 
         $book->load('genres');
 
@@ -80,9 +85,11 @@ class BookController extends Controller
         $genreIds = $data['genres'];
         unset($data['genres']);
 
-        $book->update($data);
+        DB::transaction(function () use ($book, $data, $genreIds) {
+            $book->update($data);
 
-        $book->genres()->sync($genreIds);
+            $book->genres()->sync($genreIds);
+        });
 
         $book->load('genres');
 

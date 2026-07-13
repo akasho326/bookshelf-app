@@ -124,4 +124,170 @@ class BookPageTest extends TestCase
 
         $response->assertRedirect(route('login'));
     }
+
+    public function test_一覧画面でキーワードで書籍を検索できる(): void
+    {
+        Book::factory()->create([
+            'title' => 'Laravel入門',
+            'author' => '山田太郎',
+        ]);
+
+        Book::factory()->create([
+            'title' => 'PHP実践',
+            'author' => '佐藤花子',
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'keyword' => 'Laravel',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertCount(1, $books);
+        $this->assertEquals('Laravel入門', $books->first()->title);
+    }
+
+    public function test_一覧画面でジャンルで書籍を絞り込める(): void
+    {
+        $targetGenre = Genre::factory()->create();
+        $otherGenre = Genre::factory()->create();
+
+        $targetBook = Book::factory()->create([
+            'title' => '対象ジャンルの本',
+        ]);
+
+        $otherBook = Book::factory()->create([
+            'title' => '別ジャンルの本',
+        ]);
+
+        $targetBook->genres()->attach($targetGenre);
+        $otherBook->genres()->attach($otherGenre);
+
+        $response = $this->get(route('books.index', [
+            'genre' => $targetGenre->id,
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertCount(1, $books);
+        $this->assertEquals('対象ジャンルの本', $books->first()->title);
+    }
+
+    public function test_一覧画面のソートで新しい順に書籍を並び替えられる(): void
+    {
+        Book::factory()->create([
+            'title' => '古い本',
+            'created_at' => now()->subDay(),
+        ]);
+
+        Book::factory()->create([
+            'title' => '新しい本',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'newest',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertEquals('新しい本', $books->first()->title);
+    }
+
+    public function test_一覧画面のソートで古い順に書籍を並び替えられる(): void
+    {
+        Book::factory()->create([
+            'title' => '古い本',
+            'created_at' => now()->subDay(),
+        ]);
+
+        Book::factory()->create([
+            'title' => '新しい本',
+            'created_at' => now(),
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'oldest',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertEquals('古い本', $books->first()->title);
+    }
+
+    public function test_一覧画面のソートでタイトル順に書籍を並び替えられる(): void
+    {
+        Book::factory()->create([
+            'title' => 'C言語',
+        ]);
+
+        Book::factory()->create([
+            'title' => 'Laravel',
+        ]);
+
+        Book::factory()->create([
+            'title' => 'PHP',
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'title',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertEquals(
+            ['C言語', 'Laravel', 'PHP'],
+            $books->pluck('title')->values()->all()
+        );
+    }
+
+    public function test_一覧画面のソートで評価順に書籍を並び替えられる(): void
+    {
+        $highBook = Book::factory()->create([
+            'title' => 'Laravel入門',
+        ]);
+
+        $lowBook = Book::factory()->create([
+            'title' => 'PHP実践',
+        ]);
+
+        Review::factory()->create([
+            'book_id' => $highBook->id,
+            'rating' => 5,
+        ]);
+
+        Review::factory()->create([
+            'book_id' => $lowBook->id,
+            'rating' => 2,
+        ]);
+
+        $response = $this->get(route('books.index', [
+            'sort' => 'rating',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewIs('books.index');
+
+        $books = $response->viewData('books');
+
+        $this->assertEquals(
+            ['Laravel入門', 'PHP実践'],
+            $books->pluck('title')->values()->all()
+        );
+    }
 }

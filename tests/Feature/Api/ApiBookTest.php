@@ -187,6 +187,23 @@ class ApiBookTest extends TestCase
         ]);
     }
 
+    public function test_未認証ユーザーは書籍を作成できない(): void
+    {
+        $genre = Genre::factory()->create();
+
+        $response = $this->postJson('/api/v1/books', [
+            'title' => '未認証作成の本',
+            'author' => '未認証著者',
+            'genres' => [$genre->id],
+        ]);
+
+        $response->assertUnauthorized();
+
+        $this->assertDatabaseMissing('books', [
+            'title' => '未認証作成の本',
+        ]);
+    }
+
     public function test_書籍更新_ap_iで書籍を更新できる(): void
     {
         $user = User::factory()->create();
@@ -273,6 +290,28 @@ class ApiBookTest extends TestCase
         ]);
     }
 
+    public function test_未認証ユーザーは書籍を更新できない(): void
+    {
+        $book = Book::factory()->create([
+            'title' => '更新前タイトル',
+        ]);
+
+        $genre = Genre::factory()->create();
+
+        $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'title' => '未認証更新タイトル',
+            'author' => '未認証著者',
+            'genres' => [$genre->id],
+        ]);
+
+        $response->assertUnauthorized();
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'title' => '更新前タイトル',
+        ]);
+    }
+
     public function test_書籍削除_ap_iで書籍を削除できる(): void
     {
         $user = User::factory()->create();
@@ -301,5 +340,18 @@ class ApiBookTest extends TestCase
         $response = $this->deleteJson('/api/v1/books/999999');
 
         $response->assertNotFound();
+    }
+
+    public function test_未認証ユーザーは書籍を削除できない(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->deleteJson("/api/v1/books/{$book->id}");
+
+        $response->assertUnauthorized();
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+        ]);
     }
 }

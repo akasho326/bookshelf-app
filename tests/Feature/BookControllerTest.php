@@ -9,6 +9,7 @@ use App\Models\Review;
 use App\Models\ReviewLike;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class BookControllerTest extends TestCase
@@ -157,6 +158,36 @@ class BookControllerTest extends TestCase
         $response->assertRedirect(route('books.show', $book));
     }
 
+    public function test_作成者以外は書籍を更新できない(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $owner->id,
+            'title' => '更新前タイトル',
+        ]);
+
+        $response = $this->actingAs($otherUser)
+            ->put(route('books.update', $book), [
+                'title' => '不正な更新タイトル',
+                'author' => '不正な更新著者',
+                'isbn' => '9876543210123',
+                'published_date' => '2026-01-01',
+                'description' => '不正な更新',
+                'image_url' => 'https://example.com/updated.jpg',
+                'genres' => [$genre->id],
+            ]);
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'title' => '更新前タイトル',
+        ]);
+    }
+
     public function test_作成者は書籍を削除でき関連データも削除される(): void
     {
         $user = User::factory()->create();
@@ -207,6 +238,153 @@ class BookControllerTest extends TestCase
         $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
+        ]);
+    }
+
+    public function test_作成者以外は書籍を削除できない(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        $response = $this->actingAs($otherUser)
+            ->delete(route('books.destroy', $book));
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+        ]);
+    }
+
+    public function test_isbn検索で書籍情報を取得できる(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake([
+            'www.googleapis.com/*' => Http::response([
+                'items' => [
+                    [
+                        'volumeInfo' => [
+                            'title' => 'リーダブルコード',
+                            'authors' => [
+                                'Dustin Boswell',
+                                'Trevor Foucher',
+                            ],
+                            'publishedDate' => '2012-06-23',
+                            'description' => 'より良いコードを書くための実践的な解説です。',
+                            'imageLinks' => [
+                                'thumbnail' => 'https://example.com/book.jpg',
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('books.search-by-isbn', [
+                'isbn' => '9784873115658',
+            ]));
+
+        $response->assertOk();
+        $response->assertJson([
+            'title' => 'リーダブルコード',
+            'author' => 'Dustin Boswell, Trevor Foucher',
+            'isbn' => '9784873115658',
+            'published_date' => '2012-06-23',
+            'description' => 'より良いコードを書くための実践的な解説です。',
+            'image_url' => 'https://example.com/book.jpg',
+        ]);
+
+        Http::assertSent(function ($request) {
+            return str_contains(
+                $request->url(),
+                'www.googleapis.com/books/v1/volumes'
+            )
+                && $request['q'] === 'isbn:9784873115658'
+                && $request['key'] === config('services.google.books_api_key');
+        });
+    }
+
+    public function test_isbnが13桁でない場合は422エラーを返す(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake();
+
+        $response = $this->actingAs($user)
+            ->getJson(route('books.search-by-isbn', [
+                'isbn' => '123',
+            ]));
+
+        $response->assertUnprocessable();
+        $response->assertJson([
+            'error' => 'ISBNは13桁の数字で入力してください。',
+        ]);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_isbn検索で該当書籍がない場合は404エラーを返す(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake([
+            'www.googleapis.com/*' => Http::response([
+                'items' => [],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('books.search-by-isbn', [
+                'isbn' => '9784873115658',
+            ]));
+
+        $response->assertNotFound();
+        $response->assertJson([
+            'error' => '該当する書籍が見つかりませんでした。',
+        ]);
+    }
+
+    public function test_google_books_apiの利用上限時は429エラーを返す(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake([
+            'www.googleapis.com/*' => Http::response([], 429),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('books.search-by-isbn', [
+                'isbn' => '9784873115658',
+            ]));
+
+        $response->assertStatus(429);
+        $response->assertJson([
+            'error' => 'Google Books APIの利用上限に達しました。時間をおいて再度お試しください。',
+        ]);
+    }
+
+    public function test_google_books_apiの取得失敗時は500エラーを返す(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake([
+            'www.googleapis.com/*' => Http::response([], 500),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->getJson(route('books.search-by-isbn', [
+                'isbn' => '9784873115658',
+            ]));
+
+        $response->assertInternalServerError();
+        $response->assertJson([
+            'error' => '書籍情報の取得に失敗しました。',
         ]);
     }
 }

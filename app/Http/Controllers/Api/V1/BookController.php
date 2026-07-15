@@ -14,12 +14,17 @@ use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
+    /**
+     * 書籍一覧を検索・絞り込みして取得する。
+     */
     public function index(Request $request): AnonymousResourceCollection
     {
+        // ジャンル・平均評価・レビュー件数を含む取得クエリを作成
         $query = Book::with('genres')
             ->withAvg('reviews', 'rating')
             ->withCount('reviews');
 
+        // キーワードでタイトルまたは著者名を検索
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
 
@@ -29,20 +34,27 @@ class BookController extends Controller
             });
         }
 
+        // ジャンルIDで書籍を絞り込む
         if ($request->filled('genre_id')) {
             $query->whereHas('genres', function ($q) use ($request) {
                 $q->where('genres.id', $request->genre_id);
             });
         }
 
+        // 1ページあたりの表示件数を取得
         $perPage = $request->input('per_page', 20);
 
+        // 新しい書籍順でページネーションして取得
         $books = $query->latest()
             ->paginate($perPage);
 
+        // 書籍一覧をResource形式で返却
         return BookResource::collection($books);
     }
 
+    /**
+     * 書籍の詳細情報を取得する。
+     */
     public function show(Book $book): BookResource
     {
         $book->load(['genres', 'reviews.user'])
@@ -52,6 +64,9 @@ class BookController extends Controller
         return new BookResource($book);
     }
 
+    /**
+     * 書籍を登録し、ジャンルを関連付ける。
+     */
     public function store(StoreBookRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -61,6 +76,7 @@ class BookController extends Controller
         $genreIds = $data['genres'];
         unset($data['genres']);
 
+        // 書籍とジャンルをトランザクションで登録
         $book = DB::transaction(function () use ($data, $genreIds) {
             $book = Book::create($data);
 
@@ -69,6 +85,7 @@ class BookController extends Controller
             return $book;
         });
 
+        // レスポンスに含めるジャンル情報を読み込む
         $book->load('genres');
 
         return (new BookResource($book))
@@ -76,6 +93,9 @@ class BookController extends Controller
             ->setStatusCode(201);
     }
 
+    /**
+     * 書籍情報を更新し、ジャンルとの関連を同期する。
+     */
     public function update(UpdateBookRequest $request, Book $book): BookResource
     {
         $this->authorize('update', $book);
@@ -96,6 +116,9 @@ class BookController extends Controller
         return new BookResource($book);
     }
 
+    /**
+     * 書籍を削除する。
+     */
     public function destroy(Book $book): JsonResponse
     {
         $this->authorize('delete', $book);

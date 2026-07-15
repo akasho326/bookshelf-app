@@ -9,6 +9,9 @@ use Illuminate\View\View;
 
 class FavoriteController extends Controller
 {
+    /**
+     * お気に入り一覧を表示する。
+     */
     public function index(): View
     {
         $books = auth()->user()
@@ -18,8 +21,12 @@ class FavoriteController extends Controller
         return view('favorites.index', compact('books'));
     }
 
+    /**
+     * 書籍のお気に入り登録を切り替える。
+     */
     public function toggle(Book $book): RedirectResponse
     {
+        // 既にお気に入り登録しているか確認
         $favorite = Favorite::where('user_id', auth()->id())
             ->where('book_id', $book->id)
             ->first();

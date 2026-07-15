@@ -16,6 +16,7 @@ class FavoriteSeeder extends Seeder
         $users = User::all();
         $books = Book::all();
 
+        // 各ユーザーに3～5冊のお気に入りを設定
         foreach ($users as $user) {
             $randomBooks = $books->random(rand(3, 5))->pluck('id');
 

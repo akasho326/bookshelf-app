@@ -8,8 +8,12 @@ use Illuminate\Http\RedirectResponse;
 
 class ReviewLikeController extends Controller
 {
+    /**
+     * レビューのいいねを切り替える。
+     */
     public function toggle(Review $review): RedirectResponse
     {
+        // 既にいいねしているか確認
         $reviewLike = ReviewLike::where('user_id', auth()->id())
             ->where('review_id', $review->id)
             ->first();

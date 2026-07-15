@@ -16,6 +16,7 @@ class ReviewLikeSeeder extends Seeder
         $users = User::all();
         $reviews = Review::all();
 
+        // 各レビューに0～3人のユーザーがいいね（自分のレビューを除く）
         foreach ($reviews as $review) {
             $likeUserIds = $users
                 ->where('id', '!=', $review->user_id)

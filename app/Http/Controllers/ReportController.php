@@ -9,18 +9,25 @@ use Illuminate\View\View;
 
 class ReportController extends Controller
 {
+    /**
+     * ログインユーザーのレビュー評価、読了数、ジャンル別評価を集計し、
+     * 読書レポートを表示する。
+     */
     public function index(): View
     {
         $user = auth()->user();
 
+        // ログインユーザーのレビューを取得
         $reviews = Review::with('book.genres')
             ->where('user_id', $user->id)
             ->get();
 
+        // 読了済みの読書計画を取得
         $completedPlans = ReadingPlan::where('user_id', $user->id)
             ->where('status', ReadingPlanStatus::Completed)
             ->get();
 
+        // レビュー評価（1～5）の件数を集計
         $ratingDistribution = collect(range(1, 5))
             ->map(function (int $rating) use ($reviews) {
                 return $reviews
@@ -28,6 +35,7 @@ class ReportController extends Controller
                     ->count();
             });
 
+        // 評価4以上の高評価書籍を抽出
         $topRatedBooks = $reviews
             ->filter(fn ($review) => $review->rating >= 4)
             ->sortByDesc('rating')
@@ -40,6 +48,7 @@ class ReportController extends Controller
             ])
             ->values();
 
+        // ジャンルごとの平均評価を集計
         $genreRatings = $reviews
             ->flatMap(function ($review) {
                 return $review->book->genres->map(function ($genre) use ($review) {
@@ -63,6 +72,7 @@ class ReportController extends Controller
             ->take(5)
             ->values();
 
+        // ビューへ渡すレポートデータを作成
         $stats = [
             'summary' => [
                 'total_reviews' => $reviews->count(),
